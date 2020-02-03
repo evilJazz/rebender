@@ -40,7 +40,7 @@ executeCallback()
 
 executeOnRemote()
 {
-    ssh -q -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -A "$REMOTE_SSH" -- ${REMOTE_RUN_CMD[@]} "$@"
+    ssh -t -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -A "$REMOTE_SSH" -- ${REMOTE_RUN_CMD[@]} "$@"
 }
 
 configList()
