@@ -1,22 +1,3 @@
-export BORG=$(which "borgbackup")
-
-checkConfig()
-{
-    if [ -z "$BORG" ]; then
-        echo "Please install borgbackup first. Quitting."
-        exit 1
-    fi
-
-    if [ -z "$BORG_PASSPHRASE" ]; then
-        echo "BORG_PASSPHRASE environment variable is not set. Aborting!"
-        exit 1
-    fi
-
-    if [ -z "$BORG_REPO" ]; then
-        echo "BORG_REPO environment variable is not set. Aborting!"
-        exit 1
-    fi
-}
 
 isBorgMounted()
 {
@@ -28,7 +9,7 @@ getRepoAddress()
     if [[ -z $SKIP_REMOTE_REPO_ADDRESS_REWRITE ]] && [[ $SKIP_REMOTE_REPO_ADDRESS_REWRITE -eq 1 ]]; then
          echo "$BORG_REPO"
     else
-        isRemote && echo "$REMOTE_SOURCE_SSH:$BORG_REPO" || echo "$BORG_REPO"
+        isRemote && echo "$REMOTE_SSH:$BORG_REPO" || echo "$BORG_REPO"
     fi
 }
 
@@ -120,10 +101,7 @@ runBackup()
         "$BORG_REPO::$BACKUP_NAME_PREFIX-$(date +%Y-%m-%d_%H%M)" "${SOURCE[@]}"
 
     if [ "$1" == "check" ]; then
-        echo
-        echo "Checking backups..."
-        echo
-        time "$BORG" check -v --show-rc "${BORG_CHECK_PARAMS[@]}" --last ${BACKUPS_TO_CHECK:-2} "$BORG_REPO"
+        runCheck
     fi
 
     echo
@@ -142,6 +120,18 @@ runBackup()
     time $BORG list "$BORG_REPO"
 
     executeCallback postBackup
+}
+
+runCheck()
+{
+    executeCallback preCheck
+
+    echo
+    echo "Checking backups..."
+    echo
+    time "$BORG" check -v --show-rc "${BORG_CHECK_PARAMS[@]}" --last ${BACKUPS_TO_CHECK:-2} "$BORG_REPO"
+
+    executeCallback postCheck
 }
 
 breakLock()
