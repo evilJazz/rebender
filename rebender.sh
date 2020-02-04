@@ -5,7 +5,9 @@ cd "$SCRIPT_ROOT"
 
 set -e -o pipefail
 source "includes/common.inc.sh"
+source "includes/configs.inc.sh"
 source "includes/modules.inc.sh"
+source "includes/remote.inc.sh"
 
 usage()
 {
