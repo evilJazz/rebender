@@ -11,15 +11,17 @@ execute_usage()
 
 execute_checkConfig()
 {
-    # Default action requested?
-    if [ -z "$DEFAULT_ACTION" ]; then
-        echo "DEFAULT_ACTION not defined. Aborting!"
-        return 1
-    fi
+    if [ "$2" == "default" ]; then
+        # Default action requested?
+        if [ -z "$DEFAULT_ACTION" ]; then
+            echo "DEFAULT_ACTION not defined. Aborting!"
+            return 1
+        fi
 
-    if [ -z "$DEFAULT_MODULE" ]; then
-        echo "DEFAULT_MODULE not defined. Aborting!"
-        return 1
+        if [ -z "$DEFAULT_MODULE" ]; then
+            echo "DEFAULT_MODULE not defined. Aborting!"
+            return 1
+        fi
     fi
 }
 
@@ -33,7 +35,7 @@ execute_action()
             moduleAction "$DEFAULT_MODULE" "$DEFAULT_ACTION" "$@"
             ;;
         *)
-            usage
+            executeCallback "$ACTION" || usage
             ;;
     esac
 }

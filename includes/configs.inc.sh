@@ -48,11 +48,12 @@ loadConfig()
 
     if [ -n "$SUB_CONFIG" ]; then
         echo "Activating sub-config \"$SUB_CONFIG\"..."
-        if functionExists "$SUB_CONFIG"; then 
-            "$SUB_CONFIG"
-        else
+        
+        if ! functionExists "$SUB_CONFIG"; then 
             echo "$SUB_CONFIG does not exist. Aborting!"
             return 1
         fi
+
+        executeCallback "$SUB_CONFIG"
     fi
 }
