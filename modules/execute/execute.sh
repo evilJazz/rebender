@@ -14,12 +14,12 @@ execute_checkConfig()
     if [ "$2" == "default" ]; then
         # Default action requested?
         if [ -z "$DEFAULT_ACTION" ]; then
-            echo "DEFAULT_ACTION not defined. Aborting!"
+            fatal "DEFAULT_ACTION not defined."
             return 1
         fi
 
         if [ -z "$DEFAULT_MODULE" ]; then
-            echo "DEFAULT_MODULE not defined. Aborting!"
+            fatal "DEFAULT_MODULE not defined."
             return 1
         fi
     fi
@@ -31,8 +31,8 @@ execute_action()
 
     case "$ACTION" in
         default)
-            moduleCheckConfig "$DEFAULT_MODULE" "$@"
-            moduleAction "$DEFAULT_MODULE" "$DEFAULT_ACTION" "$@"
+            module_checkConfig "$DEFAULT_MODULE" "$@"
+            module_action "$DEFAULT_MODULE" "$DEFAULT_ACTION" "$@"
             ;;
         *)
             executeCallback "$ACTION" || usage

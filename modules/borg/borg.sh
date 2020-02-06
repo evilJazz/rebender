@@ -23,22 +23,22 @@ borg_usage()
 borg_checkConfig()
 {
     if [ -z "$BORG" ]; then
-        echo "Please install borgbackup first. Quitting."
-        exit 1
+        fatal "Please install borgbackup first."
+        return 1
     fi
 
     if [ -z "$BORG_PASSPHRASE" ]; then
-        echo "BORG_PASSPHRASE environment variable is not set. Aborting!"
-        exit 1
+        fatal "BORG_PASSPHRASE environment variable is not set."
+        return 1
     fi
 
     if [ -z "$BORG_REPO" ]; then
-        echo "BORG_REPO environment variable is not set. Aborting!"
-        exit 1
+        fatal "BORG_REPO environment variable is not set."
+        return 1
     fi
 }
 
-borg_isLocalAction()
+borg_action_isLocal()
 {
     [[ "$1" =~ mount$ ]]
 }
@@ -50,20 +50,20 @@ borg_action()
 
     case "$ACTION" in
         list)
-            listBackups
+            borg_listBackups
             ;;
         info)
-            info
+            borg_info
             ;;
         mount)
             BACKUP_NAME="$1"
             MOUNTPOINT="$2"
 
             if [ -z "$BACKUP_NAME" ]; then
-                if isRemote && [[ "$RUNNING_REMOTELY" -eq 0 ]]; then
-                    runOnRemote "$CONFIG" borg list
+                if remote_isRequested && [[ "$RUNNING_REMOTELY" -eq 0 ]]; then
+                    remote_run "$CONFIG" borg list
                 else
-                    listBackups
+                    borg_listBackups
                 fi
                 
                 echo
@@ -71,45 +71,45 @@ borg_action()
                 exit 0
             fi
 
-            mountBackup "$BACKUP_NAME" "$MOUNTPOINT"
+            borg_mountBackup "$BACKUP_NAME" "$MOUNTPOINT"
             ;;
         umount)
             MOUNTPOINT="$1"
 
             if [[ -n "$MOUNTPOINT" ]] && [[ ! -d "$MOUNTPOINT" ]]; then
-                echo "The mountpoint $MOUNTPOINT does not exist."
+                error "The mountpoint $MOUNTPOINT does not exist."
                 exit 1
             fi
 
-            umountBackup "$MOUNTPOINT"
+            borg_umountBackup "$MOUNTPOINT"
             ;;
         create)
-            runBackup
+            borg_runBackup
             ;;
         delete)
             BACKUP_NAME="$1"
 
             if [ -z "$BACKUP_NAME" ]; then
-                listBackups
+                borg_listBackups
                 echo
                 echo "Now re-run with "$0" "$CONFIG" borg delete [timestamp]"
                 exit 0
             fi
 
-            deleteBackup "$BACKUP_NAME"
+            borg_deleteBackup "$BACKUP_NAME"
             ;;
         check)
-            runCheck
+            borg_runCheck
             ;;
         break-lock)
-            breakLock
+            borg_breakLock
             ;;
         *)
             if functionExists "$ACTION"; then
-                echo "Executing custom action: $ACTION"
+                info "Executing custom action: $ACTION"
                 "$ACTION" "$@"
             else
-                echo "Unknown action $ACTION. Qutting."
+                error "Unknown action $ACTION. Qutting."
                 usage
             fi
             ;;

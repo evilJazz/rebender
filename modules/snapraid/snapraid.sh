@@ -14,7 +14,7 @@ snapraid_usage()
 snapraid_checkConfig()
 {
     if [ -z "$SNAPRAID" ]; then
-        echo "Please install snapraid first. Quitting."
+        fatal "Please install snapraid first."
         return 1
     fi
 }
@@ -32,7 +32,7 @@ snapraid_action()
             echo
             echo "---------------------------------------------------------"
 
-            echo "Running snapraid diff..."
+            info "Running snapraid diff..."
             "$SNAPRAID" diff || true
 
             echo
@@ -55,13 +55,13 @@ snapraid_action()
             echo
             echo "---------------------------------------------------------"
 
-            echo "Running snapraid status..."
+            info "Running snapraid status..."
             "$SNAPRAID" status
 
             echo
             echo "---------------------------------------------------------"
 
-            echo "Running snapraid scrub -v..."
+            info "Running snapraid scrub -v..."
             if [ -t 0 ]; then
                 "$SNAPRAID" scrub -p${SNAPRAID_SCRUB_PERCENT:-2}
             else
@@ -79,7 +79,7 @@ snapraid_action()
             echo
             echo "---------------------------------------------------------"
 
-            echo "Running snapraid status..."
+            info "Running snapraid status..."
             "$SNAPRAID" status
 
             executeCallback snapraid_postRun

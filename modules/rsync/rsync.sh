@@ -14,17 +14,17 @@ rsync_usage()
 rsync_checkConfig()
 {
     if [ -z "$RSYNC" ]; then
-        echo "Please install rsync first. Quitting."
+        fatal "Please install rsync first."
         return 1
     fi
 
     if [ -z "$RSYNC_SRC" ]; then
-        echo "RSYNC_SRC not defined. Aborting!"
+        fatal "RSYNC_SRC not defined."
         return 1
     fi
 
     if [ -z "$RSYNC_DST" ]; then
-        echo "RSYNC_DST not defined. Aborting!"
+        fatal "RSYNC_DST not defined."
         return 1
     fi
 }
@@ -41,13 +41,13 @@ rsync_action()
             executeCallback rsync_preRun
 
             if [ ${RSYNC_BORG_MODE:=0} -eq 1 ]; then
-                echo "Running rsync in Borg sync mode..."
+                info "Running rsync in Borg sync mode..."
                 # First data chunks...
                 "$RSYNC" -Eax --stats --progress "${RSYNC_EXTRA_ARGS[@]}" "$RSYNC_SRC/data"/ "$RSYNC_DST/data"/
                 # Finally index and delete old files...
                 "$RSYNC" -Eax --stats --progress "${RSYNC_EXTRA_ARGS[@]}" --delete-after "$RSYNC_SRC"/ "$RSYNC_DST"/
             else
-                echo "Running rsync..."
+                info "Running rsync..."
                 "$RSYNC" -Eax --stats --progress "${RSYNC_EXTRA_ARGS[@]}" "$RSYNC_SRC"/ "$RSYNC_DST"/
             fi
 

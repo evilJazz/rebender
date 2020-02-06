@@ -3,16 +3,16 @@ SELFCONTAINED_CONFIG_ROOT="$SCRIPT_ROOT/configs"
 export CONFIG_ROOT="${REBENDER_CONFIG_DIR:-$SELFCONTAINED_CONFIG_ROOT}"
 unset REBENDER_CONFIG_DIR
 
-configList()
+configs_list()
 {
     find "$CONFIG_ROOT" -maxdepth 1 -mindepth 1 -name "*.conf.sh" -and -not -name "*.template.conf.sh" -type f | sort
 }
 
-configUsage()
+configs_usage()
 {
     echo "Available configs:"
     echo
-    for config in $(configList); do
+    for config in $(configs_list); do
         CONFIG_NAME=$(basename "$config")
         CONFIG_NAME=${CONFIG_NAME%.conf.sh}
         tableOutput "$CONFIG_NAME" "$config"
@@ -20,7 +20,7 @@ configUsage()
     echo
 }
 
-loadConfig()
+config_load()
 {
     SPLIT=$(dirname "$1")
     if [ "$SPLIT" != "." ]; then
@@ -34,23 +34,23 @@ loadConfig()
     fi
 
     if [ -z "$CONFIG" ]; then
-        echo "No config specified. Aborting!"
+        fatal "No config specified."
         return 1
     fi
 
     export CONFIG_FILE="$CONFIG_ROOT/$CONFIG.conf.sh"
     if [ ! -f "$CONFIG_FILE" ]; then
-        echo "$CONFIG_FILE does not exist. Aborting!"
+        fatal "$CONFIG_FILE does not exist."
         return 1
     fi
 
     source "$CONFIG_FILE"
 
     if [ -n "$SUB_CONFIG" ]; then
-        echo "Activating sub-config \"$SUB_CONFIG\"..."
+        info "Activating sub-config \"$SUB_CONFIG\"..."
         
         if ! functionExists "$SUB_CONFIG"; then 
-            echo "$SUB_CONFIG does not exist. Aborting!"
+            fatal "$SUB_CONFIG does not exist."
             return 1
         fi
 

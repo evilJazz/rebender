@@ -11,26 +11,26 @@ source "includes/remote.inc.sh"
 
 usage()
 {
-    if isValidModule "$MODULE"; then
+    if module_isValid "$MODULE"; then
         echo "Usage: $0 $FULL_CONFIG $MODULE (action) ..."
         echo
         if [ -z "$CONFIG" ]; then
-            configUsage
+            configs_usage
         fi
-        moduleUsage "$MODULE"
+        module_usage "$MODULE"
     else
         echo "Usage: $0 ${FULL_CONFIG:-(config)} (sub-module) (action) ..."
         echo
         if [ -z "$CONFIG" ]; then
-            configUsage
+            configs_usage
         fi
-        modulesUsage
+        modules_usage
     fi
 }
 
 # Startup...
-modulesLoad
-loadConfig "$1" || (echo; usage; exit 1)
+modules_load
+config_load "$1" || (echo; usage; exit 1)
 
 MODULE="$2"
 
@@ -38,15 +38,15 @@ MODULE="$2"
 
 ACTION="$3"
 
-if isRemote && ! module_isLocalAction "$MODULE" "$ACTION"; then
-    runOnRemote "$@"
+if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
+    remote_run "$@"
     EXIT_CODE=$?
     exit $EXIT_CODE
 fi
 
 shift 3
 
-moduleCheckConfig "$MODULE" "$@"
-moduleAction "$MODULE" "$ACTION" "$@"
+module_checkConfig "$MODULE" "$@"
+module_action "$MODULE" "$ACTION" "$@"
 
 exit 0

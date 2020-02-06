@@ -1,5 +1,26 @@
 #!/bin/bash
 
+COL_NORMAL="\e[0m"
+COL_RED="\e[01;31m"
+COL_YELLOW="\e[01;33m"
+COL_GREEN="\e[01;32m"
+
+info()
+{
+    printf "$COL_GREEN%s$COL_NORMAL\n" "$@"
+}
+
+fatal()
+{
+    error "$@ Quitting."
+    return 1
+}
+
+error()
+{
+    echo -e "$COL_RED$@$COL_NORMAL"
+}
+
 tableOutput()
 {
     if [ $# -gt 2 ]; then
@@ -21,7 +42,7 @@ executeCallback()
     fi
 
     if [ "$RUNNING_REMOTELY" -eq 1 ]; then
-        REMOTE_CALLBACK_NAME="${1}OnRemote"
+        REMOTE_CALLBACK_NAME="${1}_onRemote"
         shift 1
         if functionExists "$REMOTE_CALLBACK_NAME"; then
             "$REMOTE_CALLBACK_NAME" "$@"

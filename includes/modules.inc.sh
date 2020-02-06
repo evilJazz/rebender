@@ -1,15 +1,15 @@
 MODULE_ROOT="$SCRIPT_ROOT/modules"
 
-modulesList()
+modules_list()
 {
     find "$MODULE_ROOT" -maxdepth 1 -mindepth 1 -type d | sort
 }
 
-modulesUsage()
+modules_usage()
 {
     echo "Available sub-modules:"
     echo
-    for module in $(modulesList); do
+    for module in $(modules_list); do
         MODULE=$(basename "$module")
 
         MODULE_NAME_KEY="${MODULE}_name"
@@ -23,20 +23,20 @@ modulesUsage()
     echo
 }
 
-modulesLoad()
+modules_load()
 {
-    for module in $(modulesList); do
+    for module in $(modules_list); do
         MODULE_NAME=$(basename "$module")
         source "$module/${MODULE_NAME}.sh"
     done
 }
 
-isValidModule()
+module_isValid()
 {
     [[ -d "$MODULE_ROOT/$1" ]] && [[ -f "$MODULE_ROOT/$1/$1.sh" ]]
 }
 
-moduleExecuteFunction()
+module_executeFunction()
 {
     MODULE="$1"
     FN_NAME="$1_$2"
@@ -44,25 +44,25 @@ moduleExecuteFunction()
     functionExists "$FN_NAME" && eval "$FN_NAME" "$@"
 }
 
-moduleUsage()
+module_usage()
 {
     eval "$1_usage"
 }
 
-moduleCheckConfig()
+module_checkConfig()
 {
     MODULE="$1"; shift 1
-    moduleExecuteFunction "$MODULE" "checkConfig" "$@"
+    module_executeFunction "$MODULE" "checkConfig" "$@"
 }
 
-moduleAction()
+module_action()
 {
     MODULE="$1"; shift 1
-    moduleExecuteFunction "$MODULE" "action" "$@"
+    module_executeFunction "$MODULE" "action" "$@"
 }
 
-module_isLocalAction()
+module_action_isLocal()
 {
     MODULE="$1"; shift 1
-    moduleExecuteFunction "$MODULE" "isLocalAction" "$@" || false
+    module_executeFunction "$MODULE" "action_isLocal" "$@" || false
 }
