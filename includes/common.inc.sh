@@ -50,6 +50,21 @@ executeCallback()
     fi
 }
 
+findExistingDirectory()
+{
+    # Bash cannot pass arrays as args, so look up by name...
+    ARRAY_NAME=$1[@]
+    PATHS=("${!ARRAY_NAME}")
+
+    for path in "${PATHS[@]}"; do
+        if [ -d "$path" ]; then
+            echo "$path"
+            return 0
+        fi
+    done
+    return 1
+}
+
 sendEMail()
 {
     sender=$1
