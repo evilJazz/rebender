@@ -82,7 +82,7 @@ borg_runBackup()
 {
     executeCallback borg_preBackup
 
-    info "Executing borgbackup for $BACKUP_NAME_PREFIX backup:"
+    info "Executing borgbackup for $BORG_BACKUP_NAME_PREFIX backup:"
     echo
 
     if [ ! -d "$BORG_REPO" ]; then
@@ -97,7 +97,7 @@ borg_runBackup()
         --numeric-owner \
         -C "${BORG_COMPRESSION:-lz4}" -v --stats $ADDPARAMS \
         "${BORG_PARAMS[@]}" \
-        "$BORG_REPO::$BACKUP_NAME_PREFIX-$(date +%Y-%m-%d_%H%M)" "${SOURCE[@]}"
+        "$BORG_REPO::$BORG_BACKUP_NAME_PREFIX-$(date +%Y-%m-%d_%H%M)" "${BORG_SOURCE[@]}"
 
     if [ "$1" == "check" ]; then
         borg_runCheck
@@ -107,10 +107,10 @@ borg_runBackup()
     info "Pruning backups..."
     echo
     time $BORG prune -v --list --show-rc \
-        --keep-hourly ${KEEP_HOURLY:-10} \
-        --keep-daily ${KEEP_DAILY:-7} \
-        --keep-weekly ${KEEP_WEEKLY:-2} \
-        --keep-monthly ${KEEP_MONTHLY:-2} \
+        --keep-hourly ${BORG_KEEP_HOURLY:-10} \
+        --keep-daily ${BORG_KEEP_DAILY:-7} \
+        --keep-weekly ${BORG_KEEP_WEEKLY:-2} \
+        --keep-monthly ${BORG_KEEP_MONTHLY:-2} \
         "$BORG_REPO"
 
     echo
@@ -126,7 +126,7 @@ borg_runCheck()
     executeCallback borg_preCheck
 
     info "Checking backups..."
-    time "$BORG" check -v --show-rc "${BORG_CHECK_PARAMS[@]}" --last ${BACKUPS_TO_CHECK:-2} "$BORG_REPO"
+    time "$BORG" check -v --show-rc "${BORG_CHECK_PARAMS[@]}" --last ${BORG_BACKUPS_TO_CHECK:-2} "$BORG_REPO"
 
     executeCallback borg_postCheck
 }
