@@ -4,6 +4,11 @@ borg_isMounted()
     [ $(mount | grep "${MOUNTPOINT}" | wc -l) -eq 1 ]
 }
 
+borg_isRemoteRepo()
+{
+    [[ "$BORG_REPO" =~ (.*@)?.*: ]]
+}
+
 borg_getRepoAddress()
 {
     if [[ -z $SKIP_REMOTE_REPO_ADDRESS_REWRITE ]] && [[ $SKIP_REMOTE_REPO_ADDRESS_REWRITE -eq 1 ]]; then
@@ -68,7 +73,7 @@ borg_umountBackup()
 
     if borg_isMounted; then
         if ! fusermount -u "${MOUNTPOINT}"; then
-            error "${BORG_S3_MOUNTPOINT} could not be unmounted."
+            error "${MOUNTPOINT} could not be unmounted."
         else
             info "${MOUNTPOINT} unmounted."
             sleep 5
@@ -85,9 +90,18 @@ borg_runBackup()
     info "Executing borgbackup for $BORG_BACKUP_NAME_PREFIX backup:"
     echo
 
-    if [ ! -d "$BORG_REPO" ]; then
-        mkdir -p "$BORG_REPO"
-        "$BORG" init -e repokey "$BORG_REPO"
+    if borg_isRemoteRepo; then
+        BORG_SSH_SERVER=${BORG_REPO%:*}
+        BORG_REPO_LOCAL=${BORG_REPO#*:}
+        remote_ssh "${BORG_SSH_SERVER}" \
+            "[ ! -d \"$BORG_REPO_LOCAL\" ] && \
+            (mkdir -p \"$BORG_REPO_LOCAL\";\
+            \"$BORG\" init -e repokey \"$BORG_REPO_LOCAL\") || true"
+    else
+        if [ ! -d "$BORG_REPO" ]; then
+            mkdir -p "$BORG_REPO"
+            "$BORG" init -e repokey "$BORG_REPO"
+        fi
     fi
 
     [ -t 0 ] && ADDPARAMS="--progress"

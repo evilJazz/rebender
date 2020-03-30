@@ -61,13 +61,13 @@ borg_action()
 
             if [ -z "$BACKUP_NAME" ]; then
                 if remote_isRequested && [[ "$RUNNING_REMOTELY" -eq 0 ]]; then
-                    remote_run "$CONFIG" borg list
+                    remote_run "$FULL_CONFIG" borg list
                 else
                     borg_listBackups
                 fi
                 
                 echo
-                echo "Now re-run with "$0" "$CONFIG" borg mount [backup name] [mountpoint default: $BORG_MOUNTPOINT ]"
+                echo "Now re-run with "$0" "$FULL_CONFIG" borg mount [backup name] [mountpoint default: $BORG_MOUNTPOINT ]"
                 exit 0
             fi
 
@@ -92,7 +92,7 @@ borg_action()
             if [ -z "$BACKUP_NAME" ]; then
                 borg_listBackups
                 echo
-                echo "Now re-run with "$0" "$CONFIG" borg delete [timestamp]"
+                echo "Now re-run with "$0" "$FULL_CONFIG" borg delete [timestamp]"
                 exit 0
             fi
 

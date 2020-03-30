@@ -3,9 +3,14 @@ export SYNCED_TO_REMOTE=0
 
 [ "$1" == "--remote" ] && RUNNING_REMOTELY=1 && shift 1
 
+remote_ssh()
+{
+    ssh -t -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -A "$@"
+}
+
 remote_executeCommand()
 {
-    ssh -t -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -A "$REMOTE_SSH" -- ${REMOTE_RUN_CMD[@]} "$@"
+    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_RUN_CMD[@]} "$@"
 }
 
 remote_isRequested()
@@ -18,15 +23,15 @@ remote_pushAppConfig()
     [ -z "$REMOTE_INSTALL_DIR" ] && export REMOTE_INSTALL_DIR="/tmp/backup_${RANDOM}_$$"
     
     info "Copying to remote..."
-    ssh "$REMOTE_SSH" "mkdir -p \"$REMOTE_INSTALL_DIR\"; chmod 700 \"$REMOTE_INSTALL_DIR\""
-    rsync -zrlptD --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
+    remote_executeCommand "mkdir -p \"$REMOTE_INSTALL_DIR\"; chmod 700 \"$REMOTE_INSTALL_DIR\""
+    eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
 
     if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
         info "Copying external config to remote..."
-        rsync -zrlptD --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
+        eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
     fi
 
-    ssh "$REMOTE_SSH" chmod 700 "$REMOTE_INSTALL_DIR"
+    remote_executeCommand chmod 700 "$REMOTE_INSTALL_DIR"
     SYNCED_TO_REMOTE=1
 }
 
@@ -37,7 +42,7 @@ remote_removeAppConfig()
     [ -z "$REMOTE_INSTALL_DIR" ] && fatal "REMOTE_INSTALL_DIR not specified or empty." && return 1
 
     info "Cleaning up remote..."
-    ssh "$REMOTE_SSH" rm -Rf "$REMOTE_INSTALL_DIR"
+    remote_executeCommand rm -Rf "$REMOTE_INSTALL_DIR"
     SYNCED_TO_REMOTE=0
 }
 

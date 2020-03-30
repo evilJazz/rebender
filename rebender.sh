@@ -37,13 +37,14 @@ MODULE="$2"
 [ $# -lt 3 ] && (usage; exit 1)
 
 ACTION="$3"
-
 if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
+    info "Running config remotely..."
     remote_run "$@"
     EXIT_CODE=$?
     exit $EXIT_CODE
 fi
 
+info "Running config locally..."
 shift 3
 
 module_checkConfig "$MODULE" "$@"
