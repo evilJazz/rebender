@@ -13,6 +13,11 @@ remote_executeCommand()
     remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_RUN_CMD[@]} "$@"
 }
 
+remote_executeInstallCommand()
+{
+    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_CMD[@]} "$@"
+}
+
 remote_isRequested()
 {
     [[ -n "$REMOTE_SSH" ]] && [[ $RUNNING_REMOTELY -eq 0 ]]
@@ -23,7 +28,7 @@ remote_pushAppConfig()
     [ -z "$REMOTE_INSTALL_DIR" ] && export REMOTE_INSTALL_DIR="/tmp/backup_${RANDOM}_$$"
     
     info "Copying to remote..."
-    remote_executeCommand "mkdir -p \"$REMOTE_INSTALL_DIR\"; chmod 700 \"$REMOTE_INSTALL_DIR\""
+    remote_executeInstallCommand "mkdir -p \"$REMOTE_INSTALL_DIR\"; chmod 700 \"$REMOTE_INSTALL_DIR\""
     eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
 
     if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
@@ -31,7 +36,7 @@ remote_pushAppConfig()
         eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
     fi
 
-    remote_executeCommand chmod 700 "$REMOTE_INSTALL_DIR"
+    remote_executeInstallCommand chmod 700 "$REMOTE_INSTALL_DIR"
     SYNCED_TO_REMOTE=1
 }
 
@@ -42,7 +47,7 @@ remote_removeAppConfig()
     [ -z "$REMOTE_INSTALL_DIR" ] && fatal "REMOTE_INSTALL_DIR not specified or empty." && return 1
 
     info "Cleaning up remote..."
-    remote_executeCommand rm -Rf "$REMOTE_INSTALL_DIR"
+    remote_executeInstallCommand rm -Rf "$REMOTE_INSTALL_DIR"
     SYNCED_TO_REMOTE=0
 }
 
