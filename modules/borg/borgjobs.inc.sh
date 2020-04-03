@@ -18,6 +18,11 @@ borg_getRepoAddress()
     fi
 }
 
+borg_execute()
+{
+    eval time "$BORG" "$@"
+}
+
 borg_info()
 {
     executeCallback borg_preMount
@@ -25,7 +30,7 @@ borg_info()
     REPO=$(borg_getRepoAddress)
 
     info "Listing info of repo $REPO :"
-    "$BORG" info -v --show-rc "$REPO"
+    borg_execute info -v --show-rc "$REPO"
 
     executeCallback borg_postMount
 }
@@ -37,7 +42,7 @@ borg_listBackups()
     REPO=$(borg_getRepoAddress)
 
     info "Enumerating backups in $REPO :"
-    "$BORG" list -v "$REPO" 
+    borg_execute list -v "$REPO" 
 
     executeCallback borg_postMount
 }
@@ -49,7 +54,7 @@ borg_mountBackup()
     REPO=$(borg_getRepoAddress)
 
     BACKUP_NAME=$1
-    [ "$BACKUP_NAME" == "latest" ] && BACKUP_NAME=$("$BORG" list -v "$REPO" | tail -n1 | head -n1 | cut -d" " -f1)
+    [ "$BACKUP_NAME" == "latest" ] && BACKUP_NAME=$(borg_execute list -v "$REPO" | tail -n1 | head -n1 | cut -d" " -f1)
 
     MOUNTPOINT="${2:-$BORG_MOUNTPOINT}"
 
@@ -60,7 +65,7 @@ borg_mountBackup()
 
     info "Mounting $BACKUP_NAME of $REPO on $MOUNTPOINT..."
     mkdir -p "$MOUNTPOINT"
-    "$BORG" mount "$REPO::$BACKUP_NAME" "$MOUNTPOINT"
+    borg_execute mount -o allow_other "$REPO::$BACKUP_NAME" "$MOUNTPOINT"
 
     executeCallback borg_postMount
 }
@@ -100,13 +105,13 @@ borg_runBackup()
     else
         if [ ! -d "$BORG_REPO" ]; then
             mkdir -p "$BORG_REPO"
-            "$BORG" init -e repokey "$BORG_REPO"
+            borg_execute init -e repokey "$BORG_REPO"
         fi
     fi
 
     [ -t 0 ] && ADDPARAMS="--progress"
 
-    time "$BORG" create \
+    borg_execute create \
         --show-rc \
         --numeric-owner \
         -C "${BORG_COMPRESSION:-lz4}" -v --stats $ADDPARAMS \
@@ -120,7 +125,7 @@ borg_runBackup()
     echo
     info "Pruning backups..."
     echo
-    time $BORG prune -v --list --show-rc \
+    borg_execute prune -v --list --show-rc \
         --keep-hourly ${BORG_KEEP_HOURLY:-10} \
         --keep-daily ${BORG_KEEP_DAILY:-7} \
         --keep-weekly ${BORG_KEEP_WEEKLY:-2} \
@@ -130,7 +135,7 @@ borg_runBackup()
     echo
     info "Available backups:"
     echo
-    time $BORG list "$BORG_REPO"
+    borg_execute list "$BORG_REPO"
 
     executeCallback borg_postBackup
 }
@@ -140,7 +145,7 @@ borg_runCheck()
     executeCallback borg_preCheck
 
     info "Checking backups..."
-    time "$BORG" check -v --show-rc "${BORG_CHECK_PARAMS[@]}" --last ${BORG_BACKUPS_TO_CHECK:-2} "$BORG_REPO"
+    borg_execute check -v --show-rc "${BORG_CHECK_PARAMS[@]}" --last ${BORG_BACKUPS_TO_CHECK:-2} "$BORG_REPO"
 
     executeCallback borg_postCheck
 }
@@ -150,7 +155,7 @@ borg_breakLock()
     executeCallback borg_preBackup
 
     info "Breaking exclusive lock in $BORG_REPO ..."
-    "$BORG" break-lock -v --show-rc "$BORG_REPO"
+    borg_execute break-lock -v --show-rc "$BORG_REPO"
 
     executeCallback borg_postBackup
 }
@@ -160,7 +165,7 @@ borg_deleteBackup()
     executeCallback borg_preBackup
 
     info "Deleting archive $BORG_REPO::$BACKUP_NAME ..."
-    "$BORG" delete -v --show-rc "$BORG_REPO::$BACKUP_NAME"
+    borg_execute delete -v --show-rc "$BORG_REPO::$BACKUP_NAME"
 
     executeCallback borg_postBackup
 }

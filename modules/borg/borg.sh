@@ -4,6 +4,7 @@ borg_name="Borg Backup"
 borg_description="Manage backups with Borg Backup."
 
 export BORG=$(which "borgbackup")
+export BORG_RSH="ssh -A"
 
 borg_usage()
 {
