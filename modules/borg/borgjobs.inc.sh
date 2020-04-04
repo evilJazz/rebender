@@ -11,16 +11,20 @@ borg_isRemoteRepo()
 
 borg_getRepoAddress()
 {
-    if [[ -z $SKIP_REMOTE_REPO_ADDRESS_REWRITE ]] && [[ $SKIP_REMOTE_REPO_ADDRESS_REWRITE -eq 1 ]]; then
+    if [[ -z $BORG_SKIP_REMOTE_REPO_ADDRESS_REWRITE ]] && [[ $BORG_SKIP_REMOTE_REPO_ADDRESS_REWRITE -eq 1 ]]; then
         echo "$BORG_REPO"
     else
-        remote_isRequested && echo "$REMOTE_SSH:$BORG_REPO" || echo "$BORG_REPO"
+        if ! borg_isRemoteRepo && remote_isRequested; then
+            echo "$REMOTE_SSH:$BORG_REPO"
+        else
+            echo "$BORG_REPO"
+        fi
     fi
 }
 
 borg_execute()
 {
-    eval time "$BORG" "$@"
+    time "$BORG" "$@"
 }
 
 borg_info()
@@ -81,7 +85,6 @@ borg_umountBackup()
             error "${MOUNTPOINT} could not be unmounted."
         else
             info "${MOUNTPOINT} unmounted."
-            sleep 5
         fi
     fi
 
