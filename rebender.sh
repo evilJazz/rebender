@@ -36,6 +36,8 @@ MODULE="$2"
 
 [ $# -lt 3 ] && (usage; exit 1)
 
+remote_sshAgent
+
 ACTION="$3"
 if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
     info "Running config remotely..."

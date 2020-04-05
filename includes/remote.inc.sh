@@ -3,6 +3,15 @@ export SYNCED_TO_REMOTE=0
 
 [ "$1" == "--remote" ] && RUNNING_REMOTELY=1 && shift 1
 
+remote_sshAgent()
+{
+    if [ $RUNNING_REMOTELY -eq 0 ]; then
+        info "Starting SSH agent and adding credentials..."
+        eval $(ssh-agent -s) > /dev/null 2>&1
+        ssh-add "$CONFIG_ROOT/../creds/"*
+    fi
+}
+
 remote_ssh()
 {
     ssh -t -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -A "$@"
@@ -15,7 +24,7 @@ remote_executeCommand()
 
 remote_executeInstallCommand()
 {
-    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_CMD[@]} "$@"
+    remote_ssh -q ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_CMD[@]} "$@"
 }
 
 remote_isRequested()
@@ -66,6 +75,8 @@ remote_cleanUp() {
         # Clean up on remote...
         remote_removeAppConfig
     fi
+
+    ssh-agent -k > /dev/null 2>&1 || true
 }
 
 trap remote_cleanUp EXIT
