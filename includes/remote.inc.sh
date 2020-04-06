@@ -8,7 +8,10 @@ remote_sshAgent()
     if [ $RUNNING_REMOTELY -eq 0 ]; then
         info "Starting SSH agent and adding credentials..."
         eval $(ssh-agent -s) > /dev/null 2>&1
-        ssh-add "$CONFIG_ROOT/../creds/"*
+        
+        if [ -d "$CREDS_ROOT" ]; then
+            ssh-add "$CREDS_ROOT/"*
+        fi
     fi
 }
 
@@ -24,7 +27,7 @@ remote_executeCommand()
 
 remote_executeInstallCommand()
 {
-    remote_ssh -q ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_CMD[@]} "$@"
+    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_CMD[@]} "$@"
 }
 
 remote_isRequested()

@@ -11,6 +11,7 @@ POSSIBLE_CONFIG_ROOTS=(
 unset REBENDER_CONFIG_DIR
 
 export CONFIG_ROOT=$(findExistingDirectory POSSIBLE_CONFIG_ROOTS)
+export CREDS_ROOT="$CONFIG_ROOT/../creds"
 
 configs_list()
 {
