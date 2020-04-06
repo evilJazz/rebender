@@ -6,10 +6,13 @@ export SYNCED_TO_REMOTE=0
 remote_sshAgent()
 {
     if [ $RUNNING_REMOTELY -eq 0 ]; then
-        info "Starting SSH agent and adding credentials..."
-        eval $(ssh-agent -s) > /dev/null 2>&1
+        if [ -z "$SSH_AGENT_PID" ]; then
+            info "Starting SSH agent..."
+            eval $(ssh-agent -s) > /dev/null 2>&1
+        fi
         
         if [ -d "$CREDS_ROOT" ]; then
+            info "Adding credentials to SSH agent..."
             ssh-add "$CREDS_ROOT/"*
         fi
     fi
