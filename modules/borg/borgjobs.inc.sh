@@ -101,10 +101,13 @@ borg_runBackup()
     if borg_isRemoteRepo; then
         BORG_SSH_SERVER=${BORG_REPO%:*}
         BORG_REPO_LOCAL=${BORG_REPO#*:}
-        remote_ssh "${BORG_SSH_SERVER}" \
-            "[ ! -d \"$BORG_REPO_LOCAL\" ] && \
-            (mkdir -p \"$BORG_REPO_LOCAL\";\
-            \"$BORG\" init -e repokey \"$BORG_REPO_LOCAL\") || true"
+        if remote_ssh "${BORG_SSH_SERVER}" "[ ! -d \"$BORG_REPO_LOCAL\" ]"; then
+            info "Repository $BORG_REPO does not exist. Attempting to initialize it."
+    
+            # TODO: Use borg init --make-parent-dirs instead, requires newer version.
+            remote_ssh "${BORG_SSH_SERVER}" "mkdir -p \"$BORG_REPO_LOCAL\""
+            borg_execute init -e repokey "$BORG_REPO"
+        fi
     else
         if [ ! -d "$BORG_REPO" ]; then
             mkdir -p "$BORG_REPO"
