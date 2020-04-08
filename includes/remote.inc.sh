@@ -42,19 +42,21 @@ remote_isRequested()
 
 remote_pushAppConfig()
 {
-    [ -z "$REMOTE_INSTALL_DIR" ] && export REMOTE_INSTALL_DIR="/tmp/backup_${RANDOM}_$$"
-    
-    info "Copying to remote..."
-    remote_executeInstallCommand "mkdir -p \"$REMOTE_INSTALL_DIR\"; chmod 700 \"$REMOTE_INSTALL_DIR\""
-    eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
+    if [ "$SYNCED_TO_REMOTE" -ne 1 ]; then
+        [ -z "$REMOTE_INSTALL_DIR" ] && export REMOTE_INSTALL_DIR="/tmp/backup_${RANDOM}_$$"
+        
+        info "Copying to remote..."
+        remote_executeInstallCommand "mkdir -p \"$REMOTE_INSTALL_DIR\""
+        remote_executeInstallCommand "chmod 700 \"$REMOTE_INSTALL_DIR\""
+        eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
 
-    if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
-        info "Copying external config to remote..."
-        eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
+        if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
+            info "Copying external config to remote..."
+            eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
+        fi
+
+        SYNCED_TO_REMOTE=1
     fi
-
-    remote_executeInstallCommand chmod 700 "$REMOTE_INSTALL_DIR"
-    SYNCED_TO_REMOTE=1
 }
 
 remote_removeAppConfig()
@@ -70,9 +72,7 @@ remote_removeAppConfig()
 
 remote_run()
 {
-    if [ "$SYNCED_TO_REMOTE" -ne 1 ]; then
-        remote_pushAppConfig
-    fi
+    remote_pushAppConfig
 
     SCRIPT_NAME=$(basename "$SCRIPT_FILENAME")
     remote_executeCommand "$REMOTE_INSTALL_DIR/$SCRIPT_NAME" --remote "$@"

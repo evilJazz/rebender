@@ -40,6 +40,8 @@ remote_sshAgent
 
 ACTION="$3"
 if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
+    remote_pushAppConfig
+
     info "Running config remotely..."
     remote_run "$@"
     EXIT_CODE=$?
