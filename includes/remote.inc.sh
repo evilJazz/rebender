@@ -1,3 +1,4 @@
+SSH_AGENT_STARTED_HERE=0
 export RUNNING_REMOTELY=0
 export SYNCED_TO_REMOTE=0
 
@@ -9,6 +10,7 @@ remote_sshAgent()
         if [ -z "$SSH_AGENT_PID" ]; then
             info "Starting SSH agent..."
             eval $(ssh-agent -s) > /dev/null 2>&1
+            SSH_AGENT_STARTED_HERE=1
         fi
         
         if [ -d "$CREDS_ROOT" ]; then
@@ -82,7 +84,9 @@ remote_cleanUp() {
         remote_removeAppConfig
     fi
 
-    ssh-agent -k > /dev/null 2>&1 || true
+    if [ "$SSH_AGENT_STARTED_HERE" -eq 1 ]; then
+        ssh-agent -k > /dev/null 2>&1 || true
+    fi
 }
 
 trap remote_cleanUp EXIT
