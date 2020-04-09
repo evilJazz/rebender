@@ -24,7 +24,7 @@ borg_getRepoAddress()
 
 borg_execute()
 {
-    time "$BORG" "$@"
+    BORG_BASE_DIR="$HOME/.rebender/borg/$PROFILE" "$BORG" "$@"
 }
 
 borg_info()
@@ -110,6 +110,8 @@ borg_runBackup()
         fi
     else
         if [ ! -d "$BORG_REPO" ]; then
+            info "Repository $BORG_REPO does not exist. Attempting to initialize it."
+            
             mkdir -p "$BORG_REPO"
             borg_execute init -e repokey "$BORG_REPO"
         fi
