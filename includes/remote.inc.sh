@@ -1,10 +1,13 @@
+REMOTE_INSTALL_USE_SUDO=0
+REMOTE_USE_SUDO=0
+
 SSH_AGENT_STARTED_HERE=0
 export RUNNING_REMOTELY=0
 export SYNCED_TO_REMOTE=0
 
 [ "$1" == "--remote" ] && RUNNING_REMOTELY=1 && shift 1
 
-remote_sshAgent()
+remote_init()
 {
     if [ $RUNNING_REMOTELY -eq 0 ]; then
         if [ -z "$SSH_AGENT_PID" ]; then
@@ -18,6 +21,20 @@ remote_sshAgent()
             ssh-add "$CREDS_ROOT/"*
         fi
     fi
+
+    if [ $REMOTE_INSTALL_USE_SUDO -eq 1 ]; then
+        info "Using sudo on remote SSH to install rebender..."
+        REMOTE_INSTALL_SUDO_CMD=(sudo -E)
+    else
+        REMOTE_INSTALL_SUDO_CMD=()
+    fi
+
+    if [ $REMOTE_USE_SUDO -eq 1 ]; then
+        info "Using sudo on remote SSH to start rebender..."
+        REMOTE_SUDO_CMD=(sudo -E)
+    else
+        REMOTE_SUDO_CMD=()
+    fi
 }
 
 remote_ssh()
@@ -27,12 +44,12 @@ remote_ssh()
 
 remote_executeCommand()
 {
-    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_RUN_CMD[@]} "$@"
+    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_SUDO_CMD[@]} ${REMOTE_RUN_CMD[@]} "$@"
 }
 
 remote_executeInstallCommand()
 {
-    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_CMD[@]} "$@"
+    remote_ssh ${REMOTE_SSH_PARAMS[@]} "$REMOTE_SSH" -- ${REMOTE_INSTALL_SUDO_CMD[@]} ${REMOTE_INSTALL_CMD[@]} "$@"
 }
 
 remote_isRequested()
@@ -48,11 +65,11 @@ remote_pushAppConfig()
         info "Copying to remote..."
         remote_executeInstallCommand "mkdir -p \"$REMOTE_INSTALL_DIR\""
         remote_executeInstallCommand "chmod 700 \"$REMOTE_INSTALL_DIR\""
-        eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
+        eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_SUDO_CMD[@]} ${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
 
         if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
             info "Copying external config to remote..."
-            eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
+            eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_SUDO_CMD[@]} ${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
         fi
 
         SYNCED_TO_REMOTE=1
