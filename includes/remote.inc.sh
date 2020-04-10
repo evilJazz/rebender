@@ -1,3 +1,5 @@
+REMOTE_DEFAULT_RSH=(ssh -t -A -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no)
+
 REMOTE_INSTALL_USE_SUDO=0
 REMOTE_USE_SUDO=0
 
@@ -39,7 +41,7 @@ remote_init()
 
 remote_ssh()
 {
-    ssh -t -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -A "$@"
+    "${REMOTE_DEFAULT_RSH[@]}" "$@"
 }
 
 remote_executeCommand()

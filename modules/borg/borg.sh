@@ -4,7 +4,8 @@ borg_name="Borg Backup"
 borg_description="Manage backups with Borg Backup."
 
 export BORG=$(which "borgbackup")
-BORG_DEFAULT_RSH="ssh -A -o StrictHostKeyChecking=no"
+
+BORG_DEFAULT_RSH="$REMOTE_DEFAULT_RSH"
 export BORG_RSH="$BORG_DEFAULT_RSH"
 
 borg_usage()

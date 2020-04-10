@@ -3,6 +3,9 @@ rsync_description="Sync folders locally or across SSH with rsync."
 
 export RSYNC=$(which "rsync")
 
+RSYNC_DEFAULT_RSH="$REMOTE_DEFAULT_RSH"
+export RSYNC_RSH="$RSYNC_DEFAULT_RSH"
+
 rsync_usage()
 {
     echo "Available actions:"
@@ -43,12 +46,12 @@ rsync_action()
             if [ ${RSYNC_BORG_MODE:=0} -eq 1 ]; then
                 info "Running rsync in Borg sync mode..."
                 # First data chunks...
-                "$RSYNC" -Eax --stats --progress "${RSYNC_EXTRA_ARGS[@]}" "$RSYNC_SRC/data"/ "$RSYNC_DST/data"/
+                "$RSYNC" -Eax --stats --progress -e "${RSYNC_RSH[@]}" "${RSYNC_EXTRA_ARGS[@]}" "$RSYNC_SRC/data"/ "$RSYNC_DST/data"/
                 # Finally index and delete old files...
-                "$RSYNC" -Eax --stats --progress "${RSYNC_EXTRA_ARGS[@]}" --delete-after "$RSYNC_SRC"/ "$RSYNC_DST"/
+                "$RSYNC" -Eax --stats --progress -e "${RSYNC_RSH[@]}" "${RSYNC_EXTRA_ARGS[@]}" --delete-after "$RSYNC_SRC"/ "$RSYNC_DST"/
             else
                 info "Running rsync..."
-                "$RSYNC" -Eax --stats --progress "${RSYNC_EXTRA_ARGS[@]}" "$RSYNC_SRC"/ "$RSYNC_DST"/
+                "$RSYNC" -Eax --stats --progress -e "${RSYNC_RSH[@]}" "${RSYNC_EXTRA_ARGS[@]}" "$RSYNC_SRC"/ "$RSYNC_DST"/
             fi
 
             executeCallback rsync_postRun
