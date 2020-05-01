@@ -59,6 +59,11 @@ remote_isRequested()
     [[ -n "$REMOTE_SSH" ]] && [[ $RUNNING_REMOTELY -eq 0 ]]
 }
 
+remote_executeRsync()
+{
+    eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_SUDO_CMD[@]} ${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$@"
+}
+
 remote_pushAppConfig()
 {
     if [ "$SYNCED_TO_REMOTE" -ne 1 ]; then
@@ -67,12 +72,15 @@ remote_pushAppConfig()
         info "Copying to remote..."
         remote_executeInstallCommand "mkdir -p \"$REMOTE_INSTALL_DIR\""
         remote_executeInstallCommand "chmod 700 \"$REMOTE_INSTALL_DIR\""
-        eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_SUDO_CMD[@]} ${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
+        remote_executeRsync -v --delete-excluded --exclude "configs/**" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
 
         if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
             info "Copying external config to remote..."
-            eval rsync -zrlptD -e \"ssh ${REMOTE_SSH_PARAMS[@]}\" --rsync-path=\"${REMOTE_INSTALL_SUDO_CMD[@]} ${REMOTE_INSTALL_CMD[@]} rsync\" --exclude=".git" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/
+        else
+            info "Copying config to remote..."
         fi
+
+        remote_executeRsync -v --delete-excluded --include "templates/**" --include "$CONFIG.conf.sh" --exclude "\*.sh" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/        
 
         SYNCED_TO_REMOTE=1
     fi
