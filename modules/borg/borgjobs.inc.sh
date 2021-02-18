@@ -119,12 +119,16 @@ borg_runBackup()
 
     [ -t 0 ] && ADDPARAMS="--progress"
 
+    RC=0
     borg_execute create \
         --show-rc \
         --numeric-owner \
         -C "${BORG_COMPRESSION:-lz4}" -v --stats $ADDPARAMS \
         "${BORG_PARAMS[@]}" \
-        "$BORG_REPO::$BORG_BACKUP_NAME_PREFIX-$(date +%Y-%m-%d_%H%M)" "${BORG_SOURCE[@]}"
+        "$BORG_REPO::$BORG_BACKUP_NAME_PREFIX-$(date +%Y-%m-%d_%H%M)" "${BORG_SOURCE[@]}" || RC=$?
+
+    # Catch error code but ignore 1 since it might only be warnings...
+    [ $RC -gt 1 ] && exit $RC
 
     if [ "$1" == "check" ]; then
         borg_runCheck
