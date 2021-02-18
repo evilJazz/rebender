@@ -56,6 +56,15 @@ config_load()
 
     source "$CONFIG_FILE"
 
+    if [[ ${#AVAILABLE_SUB_CONFIGS[@]} -gt 0 && -z "$SUB_CONFIG" ]]; then
+        error "No sub-config defined but must define sub-config:"
+        echo
+        for subconfig in ${AVAILABLE_SUB_CONFIGS[@]}; do
+            error "    $CONFIG/$subconfig"
+        done
+        return 1
+    fi
+
     if [ -n "$SUB_CONFIG" ]; then
         info "Activating sub-config \"$SUB_CONFIG\"..."
         

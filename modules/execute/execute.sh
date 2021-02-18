@@ -27,8 +27,8 @@ execute_checkConfig()
             return 1
         fi
     else
-        if ! (functionExists "$ACTION" || functionExists "${ACTION}_onRemote"); then
-            fatal "Action by name "$ACTION" is not defined."
+        if ! (functionExists "$2" || functionExists "$2_onRemote"); then
+            fatal "Action by name $2 is not defined."
             return 1
         fi
     fi

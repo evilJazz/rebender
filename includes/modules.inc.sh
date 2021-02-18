@@ -7,7 +7,7 @@ modules_list()
 
 modules_usage()
 {
-    echo "Available sub-modules:"
+    echo "Available modules:"
     echo
     for module in $(modules_list); do
         MODULE=$(basename "$module")
