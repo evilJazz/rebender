@@ -68,7 +68,7 @@ if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
 fi
 
 [ ! "$RUNNING_REMOTELY" -eq 1 ] && info "Running config locally..."
-shift 3
+shift 1
 
 module_checkConfig "$MODULE" "$@"
 module_action "$MODULE" "$ACTION" "$@"
