@@ -50,7 +50,7 @@ config_load()
 
     export CONFIG_FILE="$CONFIG_ROOT/$CONFIG.conf.sh"
     if [ ! -f "$CONFIG_FILE" ]; then
-        fatal "$CONFIG_FILE does not exist."
+        fatal "Config file $CONFIG_FILE does not exist."
         return 1
     fi
 

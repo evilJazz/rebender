@@ -6,6 +6,10 @@ execute_usage()
     echo "Available actions:"
     echo
     tableOutput "default"
+
+    for action in ${AVAILABLE_EXECUTE_ACTIONS[@]}; do
+        tableOutput "$action"
+    done
     echo
 }
 
@@ -22,6 +26,11 @@ execute_checkConfig()
             fatal "DEFAULT_MODULE not defined."
             return 1
         fi
+    else
+        if ! functionExists "$ACTION"; then
+            fatal "Action by name "$ACTION" is not defined."
+            return 1
+        fi
     fi
 }
 
@@ -35,7 +44,7 @@ execute_action()
             module_action "$DEFAULT_MODULE" "$DEFAULT_ACTION" "$@"
             ;;
         *)
-            executeCallback "$ACTION" || usage
+            executeCallback "$ACTION"
             ;;
     esac
 }

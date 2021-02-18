@@ -30,9 +30,21 @@ usage()
 
 # Startup...
 modules_load
-config_load "$1" || (echo; usage; exit 1)
+if ! config_load "$1"; then
+    FULL_CONFIG=
+    CONFIG=
+    echo
+    usage
+    exit 1
+fi
 
 MODULE="$2"
+if ! module_isValid "$MODULE"; then
+    error "Module by name $MODULE does not exist."
+    echo
+    usage
+    exit 1
+fi
 
 [ $# -lt 3 ] && (usage; exit 1)
 
