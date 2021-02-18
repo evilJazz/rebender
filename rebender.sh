@@ -60,7 +60,7 @@ if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
     exit $EXIT_CODE
 fi
 
-info "Running config locally..."
+[ ! "$RUNNING_REMOTELY" -eq 1 ] && info "Running config locally..."
 shift 3
 
 module_checkConfig "$MODULE" "$@"
