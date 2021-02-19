@@ -54,6 +54,7 @@ ACTION="$3"
 if [ ! "$RUNNING_REMOTELY" -eq 1 ]; then
     info "Executing"
     info "    config: $CONFIG"
+    info "    sub-config: $SUB_CONFIG"
     info "    module: $MODULE"
     info "    action: $ACTION"
 fi
