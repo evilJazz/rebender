@@ -51,13 +51,13 @@ fi
 remote_init
 
 ACTION="$3"
-if [ ! "$RUNNING_REMOTELY" -eq 1 ]; then
+#if [ ! "$RUNNING_REMOTELY" -eq 1 ]; then
     info "Executing"
     info "    config: $CONFIG"
     info "    sub-config: $SUB_CONFIG"
     info "    module: $MODULE"
     info "    action: $ACTION"
-fi
+#fi
 
 if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
     remote_pushAppConfig
@@ -69,9 +69,9 @@ if remote_isRequested && ! module_action_isLocal "$MODULE" "$ACTION"; then
 fi
 
 [ ! "$RUNNING_REMOTELY" -eq 1 ] && info "Running config locally..."
-shift 1
+shift 3
 
-module_checkConfig "$MODULE" "$@"
+module_checkConfig "$MODULE" "$ACTION" "$@"
 module_action "$MODULE" "$ACTION" "$@"
 
 exit 0

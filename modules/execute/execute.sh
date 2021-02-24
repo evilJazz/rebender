@@ -15,7 +15,7 @@ execute_usage()
 
 execute_checkConfig()
 {
-    if [ "$2" == "default" ]; then
+    if [ "$1" == "default" ]; then
         # Default action requested?
         if [ -z "$DEFAULT_ACTION" ]; then
             fatal "DEFAULT_ACTION not defined."
@@ -27,8 +27,8 @@ execute_checkConfig()
             return 1
         fi
     else
-        if ! (functionExists "$2" || functionExists "$2_onRemote"); then
-            fatal "Action by name $2 is not defined."
+        if ! (functionExists "$1" || functionExists "$1_onRemote"); then
+            fatal "Action by name $1 is not defined."
             return 1
         fi
     fi
