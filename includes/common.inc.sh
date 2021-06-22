@@ -65,6 +65,11 @@ findExistingDirectory()
     return 1
 }
 
+quote()
+{
+    [ $# -gt 0 ] && printf "%q " "$@" | sed 's/ $//'
+}
+
 sendEMail()
 {
     sender=$1
