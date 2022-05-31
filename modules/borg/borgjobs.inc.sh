@@ -176,8 +176,8 @@ borg_deleteBackup()
 {
     executeCallback borg_preBackup
 
-    info "Deleting archive $BORG_REPO::$BACKUP_NAME ..."
-    borg_execute delete -v --show-rc "$BORG_REPO::$BACKUP_NAME"
+    info "Deleting archive $BORG_REPO::$1 ..."
+    borg_execute delete -vv --show-rc "$BORG_REPO::$1"
 
     executeCallback borg_postBackup
 }

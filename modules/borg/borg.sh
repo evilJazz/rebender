@@ -20,6 +20,7 @@ borg_usage()
     tableOutput "umount-local"
     tableOutput "create"
     tableOutput "delete" "[backup name]"
+    tableOutput "delete-checkpoints"
     tableOutput "check"
     tableOutput "break-lock"
     echo
@@ -107,6 +108,14 @@ borg_action()
             fi
 
             borg_deleteBackup "$BACKUP_NAME"
+            ;;
+        delete-checkpoints)
+            CHECKPOINTS=$(borg_listBackups | grep ".checkpoint" | cut -d" " -f1 | xargs)
+
+            for CHECKPOINT in $CHECKPOINTS; do
+                echo "Deleting $CHECKPOINT..."
+                borg_deleteBackup "$CHECKPOINT"
+            done
             ;;
         check)
             borg_runCheck
