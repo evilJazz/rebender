@@ -35,18 +35,31 @@ functionExists()
     declare -f "$1" > /dev/null
 }
 
+executeCallbackRaw()
+{
+    local CALLBACK_NAME=$1
+    shift 1
+
+    if functionExists "$CALLBACK_NAME"; then
+        info ">> Executing $CALLBACK_NAME"
+        "$CALLBACK_NAME" "$@"
+        info "<< $REMOTE_CALLBACK_NAME done."
+    fi
+}
+
 executeCallback()
 {
-    if functionExists "$1"; then
-        "$@"
+    local CALLBACK_NAME=$1
+    shift 1
+    
+    if [ "$RUNNING_REMOTELY" -eq 0 ]; then
+        executeCallbackRaw "${CALLBACK_NAME}_onLocal" "$@"
     fi
 
+    executeCallbackRaw "${CALLBACK_NAME}"
+
     if [ "$RUNNING_REMOTELY" -eq 1 ]; then
-        REMOTE_CALLBACK_NAME="${1}_onRemote"
-        shift 1
-        if functionExists "$REMOTE_CALLBACK_NAME"; then
-            "$REMOTE_CALLBACK_NAME" "$@"
-        fi
+        executeCallbackRaw "${CALLBACK_NAME}_onRemote" "$@"
     fi
 }
 
