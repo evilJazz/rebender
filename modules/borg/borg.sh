@@ -3,7 +3,7 @@ source "modules/borg/borgjobs.inc.sh"
 borg_name="Borg Backup"
 borg_description="Manage backups with Borg Backup."
 
-export BORG=$(which "borgbackup")
+export BORG=$(which "borg")
 
 BORG_DEFAULT_RSH="$REMOTE_DEFAULT_RSH"
 export BORG_RSH="$BORG_DEFAULT_RSH"
@@ -19,6 +19,7 @@ borg_usage()
     tableOutput "mount-local" "[backup name] [mountpoint]"
     tableOutput "umount-local"
     tableOutput "create"
+    tableOutput "restore" "[backup name] [restore directory] [path ...]"
     tableOutput "delete" "[backup name]"
     tableOutput "delete-checkpoints"
     tableOutput "check"
@@ -96,6 +97,29 @@ borg_action()
             ;;
         create)
             borg_runBackup
+            ;;
+        restore)
+            BACKUP_NAME="$1"
+            RESTORE_POINT="$2"
+
+            if [ -z "$BACKUP_NAME" ]; then
+                if remote_isRequested; then
+                    remote_run "$FULL_CONFIG" borg list
+                else
+                    borg_listBackups
+                fi
+                
+                echo
+                echo "Now re-run with "$0" "$FULL_CONFIG" borg $ACTION [backup name] [restore directory] [path ...]"
+                exit 0
+            fi
+
+            if [ -z "$RESTORE_POINT" ]; then
+                error "Please specify a restore directory."
+                exit 1
+            fi
+
+            borg_runExtract "$@"
             ;;
         delete)
             BACKUP_NAME="$1"

@@ -152,6 +152,25 @@ borg_runBackup()
     executeCallback borg_postBackup
 }
 
+borg_runExtract()
+{
+    executeCallback borg_preExtract
+
+    BACKUP_NAME=$1
+    [ "$BACKUP_NAME" == "latest" ] && BACKUP_NAME=$(borg_execute list -v "$BORG_REPO" | tail -n1 | head -n1 | cut -d" " -f1)
+
+    RESTORE_POINT=$2
+
+    shift 2
+
+    info "Extracting backups @ to $RESTORE_POINT..."
+    mkdir -p "$RESTORE_POINT"
+    cd "$RESTORE_POINT"
+    borg_execute extract -v --show-rc "${BORG_EXTRACT_PARAMS[@]}" "$BORG_REPO::$BACKUP_NAME" "$@"
+
+    executeCallback borg_postExtract
+}
+
 borg_runCheck()
 {
     executeCallback borg_preCheck
