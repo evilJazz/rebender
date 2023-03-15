@@ -3,8 +3,8 @@ rsync_description="Sync folders locally or across SSH with rsync."
 
 export RSYNC=$(which "rsync")
 
-RSYNC_DEFAULT_RSH="$REMOTE_DEFAULT_RSH"
-export RSYNC_RSH="$RSYNC_DEFAULT_RSH"
+RSYNC_DEFAULT_RSH=("${REMOTE_DEFAULT_RSH[@]}")
+RSYNC_RSH=("${RSYNC_DEFAULT_RSH[@]}")
 
 rsync_usage()
 {
