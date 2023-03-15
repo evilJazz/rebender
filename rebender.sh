@@ -50,6 +50,8 @@ fi
 
 remote_init
 
+executeCallback initialization
+
 ACTION="$3"
 #if [ ! "$RUNNING_REMOTELY" -eq 1 ]; then
     info "Executing"
@@ -73,5 +75,7 @@ shift 3
 
 module_checkConfig "$MODULE" "$ACTION" "$@"
 module_action "$MODULE" "$ACTION" "$@"
+
+executeCallback finalization
 
 exit 0
