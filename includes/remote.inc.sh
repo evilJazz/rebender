@@ -1,4 +1,4 @@
-REMOTE_DEFAULT_RSH=(ssh -tt -A -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no)
+REMOTE_DEFAULT_RSH=(ssh -tt -A -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
 
 REMOTE_INSTALL_USE_SUDO=0
 REMOTE_USE_SUDO=0
@@ -72,7 +72,7 @@ remote_pushAppConfig()
         info "Copying to remote..."
         remote_executeInstallCommand "mkdir -p \"$REMOTE_INSTALL_DIR\""
         remote_executeInstallCommand "chmod 700 \"$REMOTE_INSTALL_DIR\""
-        remote_executeRsync -v --delete-excluded --exclude "configs/**" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
+        remote_executeRsync -v --exclude "configs/**" "$SCRIPT_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/
 
         if [ "$CONFIG_ROOT" != "$SELFCONTAINED_CONFIG_ROOT" ]; then
             info "Copying external config to remote..."
@@ -80,7 +80,7 @@ remote_pushAppConfig()
             info "Copying config to remote..."
         fi
 
-        remote_executeRsync -v --delete-excluded --include "templates/**" --include "$CONFIG.conf.sh" --exclude "\*.sh" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/        
+        remote_executeRsync -v --include "templates/**" --include "$CONFIG.conf.sh" --exclude "\*.sh" "$CONFIG_ROOT"/ "$REMOTE_SSH:$REMOTE_INSTALL_DIR"/configs/        
 
         SYNCED_TO_REMOTE=1
     fi
