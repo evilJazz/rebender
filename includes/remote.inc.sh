@@ -1,4 +1,4 @@
-REMOTE_DEFAULT_RSH=(ssh -tt -A -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
+REMOTE_DEFAULT_RSH=(ssh -A -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
 
 REMOTE_INSTALL_USE_SUDO=0
 REMOTE_USE_SUDO=0

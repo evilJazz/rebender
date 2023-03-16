@@ -5,8 +5,8 @@ borg_description="Manage backups with Borg Backup."
 
 export BORG=$(which "borg")
 
-BORG_DEFAULT_RSH="$REMOTE_DEFAULT_RSH"
-export BORG_RSH="$BORG_DEFAULT_RSH"
+BORG_DEFAULT_RSH=("${REMOTE_DEFAULT_RSH[@]}")
+export BORG_RSH="${BORG_DEFAULT_RSH[@]}"
 
 borg_usage()
 {
@@ -68,7 +68,7 @@ borg_action()
 
             if remote_isRequested && [[ "$ACTION" == "mount-local" && "$BORG_USE_REMOTE_SSH_AS_PROXY" -eq 1 ]]; then
                 info "Setting up SSH for proxying Borg repo $BORG_REPO via $REMOTE_SSH"
-                export BORG_RSH="$BORG_DEFAULT_RSH -J \"$REMOTE_SSH\""
+                export BORG_RSH="${BORG_DEFAULT_RSH[@]} -J \"$REMOTE_SSH\""
             fi
 
             if [ -z "$BACKUP_NAME" ]; then
