@@ -24,7 +24,10 @@ borg_getRepoAddress()
 
 borg_execute()
 {
-    BORG_BASE_DIR="$HOME/.rebender/borg/$PROFILE" "$BORG" "$@"
+    export BORG_BASE_DIR="$HOME/.rebender/borg/$PROFILE"
+    mkdir -p "$BORG_BASE_DIR"
+    "$BORG" "$@"
+    unset BORG_BASE_DIR
 }
 
 borg_info()
