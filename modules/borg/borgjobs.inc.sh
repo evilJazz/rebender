@@ -26,7 +26,7 @@ borg_execute()
 {
     export BORG_BASE_DIR="$HOME/.rebender/borg/$CONFIG"
     mkdir -p "$BORG_BASE_DIR"
-    "$BORG" "$@"
+    time "$BORG" "$@"
     unset BORG_BASE_DIR
 }
 
@@ -145,6 +145,12 @@ borg_runBackup()
         --keep-daily ${BORG_KEEP_DAILY:-7} \
         --keep-weekly ${BORG_KEEP_WEEKLY:-2} \
         --keep-monthly ${BORG_KEEP_MONTHLY:-2} \
+        "$BORG_REPO"
+
+    echo
+    info "Compacting backups..."
+    echo
+    borg_execute compact -v --show-rc \
         "$BORG_REPO"
 
     echo
