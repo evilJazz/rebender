@@ -21,6 +21,11 @@ error()
     echo -e "$COL_RED$@$COL_NORMAL"
 }
 
+failOnError()
+{
+    [ "$1" == "on" ] && set -eE -o pipefail || set +eE
+}
+
 tableOutput()
 {
     if [ $# -gt 2 ]; then
@@ -98,4 +103,31 @@ Subject: $subject
 $message
 EOF
     ) | /usr/sbin/sendmail -t
+}
+
+function killchildren {
+    local LIST=() IFS=$'\n' A
+    read -a LIST -d '' < <(exec pgrep -P "$1")
+    local A SIGNAL="${2:-SIGTERM}"
+    for A in "${LIST[@]}"; do
+        killchildren_ "$A" "$SIGNAL"
+    done
+}
+
+function killchildren_ {
+    local LIST=()
+    read -a LIST -d '' < <(exec pgrep -P "$1")
+    kill -s "$2" "$1"
+    if [[ ${#LIST[@]} -gt 0 ]]; then
+        local A
+        for A in "${LIST[@]}"; do
+            killchildren_ "$A" "$2"
+        done
+    fi
+}
+
+function cleanUp() {
+    info "Cleaning up..."
+    set -x
+    killchildren "$BASHPID"
 }

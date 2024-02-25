@@ -114,6 +114,8 @@ remote_cleanUp() {
     if [ "$SSH_AGENT_STARTED_HERE" -eq 1 ]; then
         ssh-agent -k > /dev/null 2>&1 || true
     fi
+
+    cleanUp
 }
 
 trap remote_cleanUp EXIT

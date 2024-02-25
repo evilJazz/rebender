@@ -61,12 +61,17 @@ snapraid_action()
             echo
             echo "---------------------------------------------------------"
 
-            info "Running snapraid scrub -v..."
+            info "Running snapraid scrub..."
+
+            failOnError off
+
             if [ -t 0 ]; then
                 "$SNAPRAID" scrub -p${SNAPRAID_SCRUB_PERCENT:-2}
             else
                 "$SNAPRAID" scrub -p${SNAPRAID_SCRUB_PERCENT:-2} | grep -v 'MB/s'
             fi
+
+            failOnError on
 
             #echo
             #echo "---------------------------------------------------------"
