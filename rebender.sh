@@ -3,11 +3,21 @@ SCRIPT_FILENAME=$(readlink -f "`cd \`dirname \"$0\"\`; pwd`/`basename \"$0\"`")
 SCRIPT_ROOT=$(dirname "$SCRIPT_FILENAME")
 cd "$SCRIPT_ROOT"
 
+set -m
+
 source "includes/common.inc.sh"
 failOnError on
 source "includes/configs.inc.sh"
 source "includes/modules.inc.sh"
 source "includes/remote.inc.sh"
+
+cleanUp()
+{
+    info "Stopping execution..."
+    executeCallback remote_cleanUp
+    executeCallback common_cleanUp
+}
+trap cleanUp SIGINT SIGHUP SIGTERM EXIT
 
 usage()
 {

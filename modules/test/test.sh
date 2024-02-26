@@ -16,4 +16,7 @@ test_checkConfig()
 test_action()
 {
     echo "test: Hello World!"
+    echo "Doing something for 12 seconds..."
+    sleep 12
+    echo "Done."
 }

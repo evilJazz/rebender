@@ -1,4 +1,4 @@
-REMOTE_DEFAULT_RSH=(ssh -A -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
+REMOTE_DEFAULT_RSH=(ssh -A -tt -o ConnectTimeout=300 -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
 
 REMOTE_INSTALL_USE_SUDO=0
 REMOTE_USE_SUDO=0
@@ -106,6 +106,8 @@ remote_run()
 }
 
 remote_cleanUp() {
+    info "Remote clean up..."
+
     if [ "$SYNCED_TO_REMOTE" -eq 1 ]; then
         # Clean up on remote...
         remote_removeAppConfig
@@ -114,8 +116,4 @@ remote_cleanUp() {
     if [ "$SSH_AGENT_STARTED_HERE" -eq 1 ]; then
         ssh-agent -k > /dev/null 2>&1 || true
     fi
-
-    cleanUp
 }
-
-trap remote_cleanUp EXIT
