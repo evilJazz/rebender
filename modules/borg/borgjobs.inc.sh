@@ -108,8 +108,11 @@ borg_runBackup()
             info "Repository $BORG_REPO does not exist. Attempting to initialize it."
     
             # TODO: Use borg init --make-parent-dirs instead, requires newer version.
-            remote_ssh "${BORG_SSH_SERVER}" "mkdir -p \"$BORG_REPO_LOCAL\""
-            borg_execute init -e repokey "$BORG_REPO"
+            #remote_ssh "${BORG_SSH_SERVER}" "mkdir -p \"$BORG_REPO_LOCAL\""
+            borg_execute init --make-parent-dirs -e repokey "$BORG_REPO"
+
+            BORG_ALWAYS_PRUNE=false
+            BORG_ALWAYS_COMPACT=false
         fi
     else
         if [ ! -d "$BORG_REPO" ]; then
@@ -117,6 +120,9 @@ borg_runBackup()
             
             mkdir -p "$BORG_REPO"
             borg_execute init -e repokey "$BORG_REPO"
+
+            BORG_ALWAYS_PRUNE=false
+            BORG_ALWAYS_COMPACT=false
         fi
     fi
 
@@ -125,7 +131,7 @@ borg_runBackup()
     RC=0
     borg_execute create \
         --show-rc \
-        --numeric-owner \
+        --numeric-ids \
         -C "${BORG_COMPRESSION:-lz4}" -v --stats $ADDPARAMS \
         "${BORG_PARAMS[@]}" \
         "$BORG_REPO::$BORG_BACKUP_NAME_PREFIX-$(date +%Y-%m-%d_%H%M)" "${BORG_SOURCE[@]}" || RC=$?
@@ -137,21 +143,24 @@ borg_runBackup()
         borg_runCheck
     fi
 
-    echo
-    info "Pruning backups..."
-    echo
-    borg_execute prune -v --list --show-rc \
-        --keep-hourly ${BORG_KEEP_HOURLY:-10} \
-        --keep-daily ${BORG_KEEP_DAILY:-7} \
-        --keep-weekly ${BORG_KEEP_WEEKLY:-2} \
-        --keep-monthly ${BORG_KEEP_MONTHLY:-2} \
-        "$BORG_REPO"
+    if [ "$BORG_ALWAYS_PRUNE" == "true" ]; then
+        echo
+        info "Pruning backups..."
+        echo
+        borg_execute prune -v --list --show-rc \
+            --keep-hourly ${BORG_KEEP_HOURLY:-10} \
+            --keep-daily ${BORG_KEEP_DAILY:-7} \
+            --keep-weekly ${BORG_KEEP_WEEKLY:-2} \
+            --keep-monthly ${BORG_KEEP_MONTHLY:-2} \
+            "$BORG_REPO"
+    fi
 
-    echo
-    info "Compacting backups..."
-    echo
-    borg_execute compact -v --show-rc \
-        "$BORG_REPO"
+    if [ "$BORG_ALWAYS_COMPACT" == "true" ]; then
+        echo
+        info "Compacting backups..."
+        echo
+        borg_execute compact -v --show-rc "$BORG_REPO"
+    fi
 
     echo
     info "Available backups:"
@@ -206,6 +215,31 @@ borg_deleteBackup()
 
     info "Deleting archive $BORG_REPO::$1 ..."
     borg_execute delete -vv --show-rc "$BORG_REPO::$1"
+
+    executeCallback borg_postBackup
+}
+
+borg_pruneBackups()
+{
+    executeCallback borg_preBackup
+
+    info "Pruning backups..."
+    borg_execute prune -v --list --show-rc \
+        --keep-hourly ${BORG_KEEP_HOURLY:-10} \
+        --keep-daily ${BORG_KEEP_DAILY:-7} \
+        --keep-weekly ${BORG_KEEP_WEEKLY:-2} \
+        --keep-monthly ${BORG_KEEP_MONTHLY:-2} \
+        "$BORG_REPO"
+
+    executeCallback borg_postBackup
+}
+
+borg_compactBackups()
+{
+    executeCallback borg_preBackup
+
+    info "Compacting backups..."
+    borg_execute compact -v --show-rc "$BORG_REPO"
 
     executeCallback borg_postBackup
 }

@@ -8,20 +8,25 @@ export BORG=$(which "borg")
 BORG_DEFAULT_RSH=("${REMOTE_DEFAULT_RSH[@]}")
 export BORG_RSH="${BORG_DEFAULT_RSH[@]}"
 
+export BORG_ALWAYS_PRUNE=true
+export BORG_ALWAYS_COMPACT=true
+
 borg_usage()
 {
     echo "Available actions:"
     echo
     tableOutput "list"
     tableOutput "info"
-    tableOutput "mount" "[backup name] [mountpoint]"
+    tableOutput "mount" "[backup name | latest] [mountpoint]"
     tableOutput "umount"
-    tableOutput "mount-local" "[backup name] [mountpoint]"
+    tableOutput "mount-local" "[backup name | latest] [mountpoint]"
     tableOutput "umount-local"
     tableOutput "create"
-    tableOutput "restore" "[backup name] [restore directory] [path ...]"
+    tableOutput "restore" "[backup name | latest] [restore directory] [path ...]"
     tableOutput "delete" "[backup name]"
     tableOutput "delete-checkpoints"
+    tableOutput "prune"
+    tableOutput "compact"
     tableOutput "check"
     tableOutput "break-lock"
     echo
@@ -85,7 +90,7 @@ borg_action()
 
             borg_mountBackup "$BACKUP_NAME" "$MOUNTPOINT"
             ;;
-        umount|umount-local)
+        umount|umount-local|unmount|unmount-local)
             MOUNTPOINT="$1"
 
             if [[ -n "$MOUNTPOINT" ]] && [[ ! -d "$MOUNTPOINT" ]]; then
@@ -140,6 +145,12 @@ borg_action()
                 echo "Deleting $CHECKPOINT..."
                 borg_deleteBackup "$CHECKPOINT"
             done
+            ;;
+        prune)
+            borg_pruneBackups
+            ;;
+        compact)
+            borg_compactBackups
             ;;
         check)
             borg_runCheck
