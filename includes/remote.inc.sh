@@ -20,7 +20,7 @@ remote_init()
         
         if [ -d "$CREDS_ROOT" ]; then
             info "Adding credentials to SSH agent..."
-            ssh-add "$CREDS_ROOT/"*
+            ssh-add "$CREDS_ROOT/"* || ( fatal "If this issue persists please execute:\nunset SSH_AUTH_SOCK\nunset SSH_AGENT_PID\n" && exit 1 )
         fi
     fi
 
